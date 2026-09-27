@@ -225,7 +225,10 @@ enum SilhouetteExtractor {
             break
         case .downloading:
             return (nil, true)
-        case .notReady, .error:
+        case .notReady:
+            startSegmentationDownload(request)
+            return (nil, true)
+        case .error:
             startSegmentationDownload(request)
             return (nil, true)
         @unknown default:
