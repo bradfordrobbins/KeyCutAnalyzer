@@ -1,7 +1,6 @@
-.DS_Store
-DerivedData/
-.swiftpm/
 .build/
-xcuserdata/
+.swiftpm/
+DerivedData/
 *.xcuserstate
-*.xcscmblueprint
+xcuserdata/
+.DS_Store

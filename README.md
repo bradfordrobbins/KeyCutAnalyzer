@@ -1,33 +1,39 @@
 # KeyCutAnalyzer
 
-KeyCutAnalyzer reads a Schlage SC1 key from a live side-profile camera image and shows the 5-digit bitting code.
+KeyCutAnalyzer reads a Schlage SC1 key from a live side-profile camera image. It recovers rotation, scale, and translation, draws the blade-bottom datum, the shoulder, and each cut, and shows the 5-digit bitting code bow to tip.
 
-Hold the key so the camera sees the blade in profile: bow, shoulder, and the five cuts, on a background that contrasts with the key. Distance and rotation do not matter. The app recovers scale from the uncut blade, then measures each root.
+The measurement math lives in the `KeyCutCore` Swift package (Foundation only). The iOS app, `KeyCutAnalyzer`, is a SwiftUI camera shell around that package. There is no Mac Catalyst target. Run it as an iPad app on a Mac with the Xcode destination **My Mac (Designed for iPad)** so the Mac camera is available. The iOS Simulator has no camera.
 
 ## SC1 assumptions
 
-- SC1 is a 5-cut key. The catalog still stores the sixth station at 1.012 in, and the reader does not use it.
-- Scale comes from the uncut blade height, 0.343 in: the straight bottom edge and the full height just off the shoulder.
-- The picture is a profile. Primus side bits and pin tables are not part of this reading.
-- Root depth is the distance from the blade bottom to the flat of the cut. The displayed code runs bow to tip.
-- A root outside +.002 in / −0 of the nearest bite is marked. Adjacent bites that differ by more than MACS 7 get a short warning.
+Schlage Classic SC1 uses the first five cut stations on the chart. The chart’s sixth station, 1.012 in, is stored and unused.
 
-The keyway list is data (`KeyCatalog` in the KeyCutCore package). SC1 is the only entry. Another keyway is another spec, not a new screen.
+- Scale comes from the full uncut blade height, 0.343 in, measured from the straight bottom edge to the full-height blade just off the shoulder.
+- The key is in side profile on a contrasting background. Bow left or right, bitting up or down, and camera distance are handled by the fit.
+- Root depth is the minimum bottom-distance inside a window on the 0.031 in root flat at each spec station.
+- Depth tolerance is +.002 in / −0. Spacing tolerance is ±.001 in. MACS is 7. Primus side bitting and pin-length tables are not implemented.
+- Specs are stored in inches. The screen shows millimeters (`inches × 25.4`) to three decimal places.
 
-## Run it
+## Open and run
 
-Open `KeyCutAnalyzer.xcodeproj` in Xcode. No XcodeGen step.
+1. Open `KeyCutAnalyzer.xcodeproj` in Xcode 27 (the iOS 27 SDK). No XcodeGen step.
+2. Select the **KeyCutAnalyzer** scheme.
+3. Select the run destination. For a physical iPhone that is in Developer Mode, choose that iPhone. Otherwise choose **My Mac (Designed for iPad)**.
+4. Run. iOS asks to use the camera. The usage string is “The camera measures the key.” Tap Allow. The rear wide camera starts. If you previously denied access, tap **Enable Camera** in the app, turn Camera on for KeyCutAnalyzer, and return to the app.
+5. Hold an SC1 key in side profile against a contrasting background. The readout stays empty, with “Hold the key in profile”, until a key locks.
 
-The target is iPhone and iPad (`TARGETED_DEVICE_FAMILY` 1, 2), iOS 17 or later, including My Mac (Designed for iPad). Mac Catalyst is off.
+The iOS Simulator has no camera. A phone in Developer Mode does: unlock it, trust the computer, and leave Developer Mode on under Settings → Privacy & Security.
 
-For a live camera, run **My Mac (Designed for iPad)**. The first time, choose your development team in Signing & Capabilities so Xcode can sign the app. The iOS Simulator has no camera: the app will build and launch there, and it will show that no camera is available instead of inventing a bitting code.
+On iPad-width layouts the readout is a side panel. On a compact width it sits under the camera. The key-type control lists the catalog. Today that catalog is only Schlage SC1.
 
-On iPhone the camera is full screen and the readout sits along the bottom, in portrait and landscape. On iPad the readout sits beside the camera.
+Live analysis uses Vision contour detection (`VNDetectContoursRequest`) at up to 1920 px on the long side, about 10 frames per second, so the preview stays smooth. Contours are the right tool for a root depth, which is an edge. On iOS 27, tap the key to isolate it with `GenerateIterativeSegmentationRequest` at the `.accurate` quality level (WWDC26 tap-to-segment). Double-tap clears that seed. The on-device segmentation model may download the first time. The camera overlay was not run on a device from the environment that produced this project.
 
 ## Tests
 
-KeyCutCore is a Foundation-only package. From `KeyCutCore`:
+From the repository root:
 
-```bash
+```sh
 swift test
 ```
+
+That builds `KeyCutCore` and checks millimeter formatting, nearest-bite ties, depth tolerance, MACS, and synthetic SC1 keys (including 35241 and 08046) at an identity pose and after rotation, scale, translation, and flips.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2700"
+   LastUpgradeVersion = "1600"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A80000000000000000000001"
+               BlueprintIdentifier = "A10000000000000000000002"
                BuildableName = "KeyCutAnalyzer.app"
                BlueprintName = "KeyCutAnalyzer"
                ReferencedContainer = "container:KeyCutAnalyzer.xcodeproj">
@@ -42,7 +42,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A80000000000000000000001"
+            BlueprintIdentifier = "A10000000000000000000002"
             BuildableName = "KeyCutAnalyzer.app"
             BlueprintName = "KeyCutAnalyzer"
             ReferencedContainer = "container:KeyCutAnalyzer.xcodeproj">
@@ -59,7 +59,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A80000000000000000000001"
+            BlueprintIdentifier = "A10000000000000000000002"
             BuildableName = "KeyCutAnalyzer.app"
             BlueprintName = "KeyCutAnalyzer"
             ReferencedContainer = "container:KeyCutAnalyzer.xcodeproj">

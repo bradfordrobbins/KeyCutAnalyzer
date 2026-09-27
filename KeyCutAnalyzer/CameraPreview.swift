@@ -5,113 +5,144 @@ import UIKit
 
 struct CameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
-    var reading: KeyReading?
-    var bufferSize: CGSize
-    var analysisStride: Int
+    let previewEpoch: Int
+    let reading: KeyReading?
+    let imageSize: CGSize
+    let onPreviewReady: (AVCaptureVideoPreviewLayer) -> Void
+    let onTapNormalized: (CGPoint) -> Void
+    let onDoubleTap: () -> Void
 
-    func makeUIView(context: Context) -> KeyPreviewView {
-        let view = KeyPreviewView()
+    func makeUIView(context: Context) -> PreviewHost {
+        let view = PreviewHost()
         view.previewLayer.session = session
         view.previewLayer.videoGravity = .resizeAspectFill
+        view.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1)
+        context.coordinator.attachGestures(to: view)
+        DispatchQueue.main.async {
+            onPreviewReady(view.previewLayer)
+        }
         return view
     }
 
-    func updateUIView(_ view: KeyPreviewView, context: Context) {
-        if view.previewLayer.session !== session {
-            view.previewLayer.session = session
+    func updateUIView(_ uiView: PreviewHost, context: Context) {
+        context.coordinator.onTapNormalized = onTapNormalized
+        context.coordinator.onDoubleTap = onDoubleTap
+        if uiView.previewLayer.session !== session || context.coordinator.previewEpoch != previewEpoch {
+            uiView.previewLayer.session = session
+            context.coordinator.previewEpoch = previewEpoch
+            onPreviewReady(uiView.previewLayer)
         }
-        view.previewLayer.videoGravity = .resizeAspectFill
-        view.reading = reading
-        view.bufferSize = bufferSize
-        view.analysisStride = max(analysisStride, 1)
-        view.redrawOverlay()
+        uiView.reading = reading
+        uiView.imageSize = imageSize
+        uiView.setNeedsLayout()
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onTapNormalized: onTapNormalized, onDoubleTap: onDoubleTap)
+    }
+
+    final class Coordinator: NSObject {
+        var onTapNormalized: (CGPoint) -> Void
+        var onDoubleTap: () -> Void
+        var previewEpoch = -1
+
+        init(onTapNormalized: @escaping (CGPoint) -> Void, onDoubleTap: @escaping () -> Void) {
+            self.onTapNormalized = onTapNormalized
+            self.onDoubleTap = onDoubleTap
+        }
+
+        func attachGestures(to view: PreviewHost) {
+            let single = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+            let double = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+            double.numberOfTapsRequired = 2
+            single.require(toFail: double)
+            view.addGestureRecognizer(single)
+            view.addGestureRecognizer(double)
+        }
+
+        @objc private func handleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let view = recognizer.view as? PreviewHost else { return }
+            let location = recognizer.location(in: view)
+            let metadata = view.previewLayer.metadataOutputRectConverted(fromLayerRect: CGRect(origin: location, size: .zero))
+            onTapNormalized(CGPoint(x: metadata.origin.x, y: metadata.origin.y))
+        }
+
+        @objc private func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
+            onDoubleTap()
+        }
     }
 }
 
-final class KeyPreviewView: UIView {
-    let previewLayer = AVCaptureVideoPreviewLayer()
-    private let shapeLayer = CAShapeLayer()
-    private var textLayers: [CATextLayer] = []
+final class PreviewHost: UIView {
+    override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
+
+    var previewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
     var reading: KeyReading?
-    var bufferSize: CGSize = .zero
-    var analysisStride: Int = 1
+    var imageSize: CGSize = .zero
+
+    private let shape = CAShapeLayer()
+    private var labels: [CATextLayer] = []
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .black
-        previewLayer.videoGravity = .resizeAspectFill
-        layer.addSublayer(previewLayer)
-        shapeLayer.fillColor = UIColor.clear.cgColor
-        shapeLayer.strokeColor = UIColor(red: 0.91, green: 0.76, blue: 0.42, alpha: 0.95).cgColor
-        shapeLayer.lineWidth = 1.5
-        shapeLayer.lineCap = .round
-        layer.addSublayer(shapeLayer)
+        isMultipleTouchEnabled = false
+        shape.fillColor = UIColor.clear.cgColor
+        shape.lineWidth = 2
+        shape.strokeColor = UIColor(red: 0.86, green: 0.73, blue: 0.42, alpha: 1).cgColor
+        layer.addSublayer(shape)
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) {
         nil
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        previewLayer.frame = bounds
-        redrawOverlay()
+        shape.frame = bounds
+        redraw()
     }
 
-    func redrawOverlay() {
-        textLayers.forEach { $0.removeFromSuperlayer() }
-        textLayers.removeAll()
-        guard let reading, bufferSize.width > 1, bufferSize.height > 1, bounds.width > 1 else {
-            shapeLayer.path = nil
+    private func redraw() {
+        labels.forEach { $0.removeFromSuperlayer() }
+        labels.removeAll()
+        guard let reading, imageSize.width > 1, imageSize.height > 1 else {
+            shape.path = nil
             return
         }
-
         let path = UIBezierPath()
-        if let first = reading.cuts.first, let last = reading.cuts.last {
-            path.move(to: viewPoint(first.bottomPoint))
-            path.addLine(to: viewPoint(last.bottomPoint))
+        path.move(to: viewPoint(reading.overlay.bottomStart))
+        path.addLine(to: viewPoint(reading.overlay.bottomEnd))
+        path.move(to: viewPoint(reading.overlay.shoulderStart))
+        path.addLine(to: viewPoint(reading.overlay.shoulderEnd))
+        for (cut, geometry) in zip(reading.cuts, reading.overlay.cuts) {
+            path.move(to: viewPoint(geometry.bottom))
+            path.addLine(to: viewPoint(geometry.root))
+            addLabel(cut: cut, at: viewPoint(geometry.label))
         }
-        for cut in reading.cuts {
-            let bottom = viewPoint(cut.bottomPoint)
-            let root = viewPoint(cut.rootPoint)
-            path.move(to: bottom)
-            path.addLine(to: root)
-            let label = makeLabel(shoulder: cut.shoulderText, root: cut.rootText)
-            let dx = root.x - bottom.x
-            let dy = root.y - bottom.y
-            let length = max(hypot(dx, dy), 1)
-            let origin = CGPoint(x: root.x + dx / length * 10 - 22, y: root.y + dy / length * 10 - 8)
-            label.frame = CGRect(x: origin.x, y: origin.y, width: 64, height: 30)
-            layer.addSublayer(label)
-            textLayers.append(label)
-        }
-        shapeLayer.path = path.cgPath
-        shapeLayer.frame = bounds
+        shape.path = path.cgPath
     }
 
-    /// Analysis pixels sit on a stride grid of the unrotated buffer. The preview layer applies video gravity.
-    private func viewPoint(_ imagePoint: Point2D) -> CGPoint {
-        let stride = CGFloat(analysisStride)
-        let normalized = CGPoint(
-            x: imagePoint.x * stride / bufferSize.width,
-            y: imagePoint.y * stride / bufferSize.height
+    private func viewPoint(_ point: Point2D) -> CGPoint {
+        let normalized = CGRect(
+            x: point.x / imageSize.width,
+            y: point.y / imageSize.height,
+            width: 0,
+            height: 0
         )
-        return previewLayer.layerPointConverted(fromCaptureDevicePoint: normalized)
+        return previewLayer.layerRectConverted(fromMetadataOutputRect: normalized).origin
     }
 
-    private func makeLabel(shoulder: String, root: String) -> CATextLayer {
-        let label = CATextLayer()
-        label.string = "\(shoulder)\n\(root)"
-        label.font = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
-        label.fontSize = 11
-        label.foregroundColor = UIColor(red: 0.96, green: 0.93, blue: 0.84, alpha: 1).cgColor
-        label.backgroundColor = UIColor.black.withAlphaComponent(0.62).cgColor
-        label.cornerRadius = 4
-        label.alignmentMode = .center
-        label.isWrapped = true
-        label.contentsScale = window?.windowScene?.screen.scale ?? traitCollection.displayScale
-        label.masksToBounds = true
-        return label
+    private func addLabel(cut: CutReading, at point: CGPoint) {
+        let text = CATextLayer()
+        text.string = "\(cut.shoulderDistanceText)\n\(cut.rootDepthText)"
+        text.fontSize = 11
+        text.alignmentMode = .center
+        text.foregroundColor = UIColor(red: 0.94, green: 0.92, blue: 0.86, alpha: 1).cgColor
+        text.backgroundColor = UIColor(white: 0, alpha: 0.45).cgColor
+        text.contentsScale = UIScreen.main.scale
+        text.frame = CGRect(x: point.x - 28, y: point.y - 16, width: 56, height: 28)
+        text.isWrapped = true
+        layer.addSublayer(text)
+        labels.append(text)
     }
 }

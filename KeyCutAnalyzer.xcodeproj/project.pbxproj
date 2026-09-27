@@ -3,55 +3,74 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000001 /* KeyCutCore in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000001 /* KeyCutCore */; };
+		B10000000000000000000001 /* KeyCutAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* KeyCutAnalyzerApp.swift */; };
+		B10000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* ContentView.swift */; };
+		B10000000000000000000003 /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* CameraController.swift */; };
+		B10000000000000000000004 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000004 /* CameraPreview.swift */; };
+		B10000000000000000000005 /* SilhouetteExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000005 /* SilhouetteExtractor.swift */; };
+		B10000000000000000000006 /* ReadoutPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000006 /* ReadoutPanel.swift */; };
+		B10000000000000000000007 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000007 /* LaunchScreen.storyboard */; };
+		B10000000000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000008 /* Assets.xcassets */; };
+		B10000000000000000000009 /* KeyCutCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000008 /* KeyCutCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A30000000000000000000001 /* KeyCutAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyCutAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000006 /* KeyCutAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyCutAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000000000000000000001 /* KeyCutAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCutAnalyzerApp.swift; sourceTree = "<group>"; };
+		F10000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F10000000000000000000003 /* CameraController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
+		F10000000000000000000004 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
+		F10000000000000000000005 /* SilhouetteExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilhouetteExtractor.swift; sourceTree = "<group>"; };
+		F10000000000000000000006 /* ReadoutPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadoutPanel.swift; sourceTree = "<group>"; };
+		F10000000000000000000007 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F10000000000000000000008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F10000000000000000000009 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		A40000000000000000000001 /* KeyCutAnalyzer */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = KeyCutAnalyzer;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
-		A50000000000000000000001 /* Frameworks */ = {
+		A10000000000000000000005 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000001 /* KeyCutCore in Frameworks */,
+				B10000000000000000000009 /* KeyCutCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A60000000000000000000001 = {
+		A1000000000000000000000A /* */ = {
 			isa = PBXGroup;
 			children = (
-				A40000000000000000000001 /* KeyCutAnalyzer */,
-				A70000000000000000000001 /* Products */,
+				A1000000000000000000000B /* KeyCutAnalyzer */,
+				A1000000000000000000000C /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A70000000000000000000001 /* Products */ = {
+		A1000000000000000000000B /* KeyCutAnalyzer */ = {
 			isa = PBXGroup;
 			children = (
-				A30000000000000000000001 /* KeyCutAnalyzer.app */,
+				F10000000000000000000001 /* KeyCutAnalyzerApp.swift */,
+				F10000000000000000000002 /* ContentView.swift */,
+				F10000000000000000000003 /* CameraController.swift */,
+				F10000000000000000000004 /* CameraPreview.swift */,
+				F10000000000000000000005 /* SilhouetteExtractor.swift */,
+				F10000000000000000000006 /* ReadoutPanel.swift */,
+				F10000000000000000000007 /* LaunchScreen.storyboard */,
+				F10000000000000000000008 /* Assets.xcassets */,
+				F10000000000000000000009 /* Info.plist */,
+			);
+			path = KeyCutAnalyzer;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000000C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000006 /* KeyCutAnalyzer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,89 +78,93 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A80000000000000000000001 /* KeyCutAnalyzer */ = {
+		A10000000000000000000002 /* KeyCutAnalyzer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A90000000000000000000001 /* Build configuration list for PBXNativeTarget "KeyCutAnalyzer" */;
+			buildConfigurationList = A1000000000000000000000E /* Build configuration list for PBXNativeTarget "KeyCutAnalyzer" */;
 			buildPhases = (
-				AA0000000000000000000001 /* Sources */,
-				A50000000000000000000001 /* Frameworks */,
-				AB0000000000000000000001 /* Resources */,
+				A10000000000000000000003 /* Sources */,
+				A10000000000000000000005 /* Frameworks */,
+				A10000000000000000000004 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				A40000000000000000000001 /* KeyCutAnalyzer */,
-			);
 			name = KeyCutAnalyzer;
 			packageProductDependencies = (
-				A20000000000000000000001 /* KeyCutCore */,
+				A10000000000000000000008 /* KeyCutCore */,
 			);
 			productName = KeyCutAnalyzer;
-			productReference = A30000000000000000000001 /* KeyCutAnalyzer.app */;
+			productReference = A10000000000000000000006 /* KeyCutAnalyzer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		AC0000000000000000000001 /* Project object */ = {
+		A10000000000000000000001 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2700;
-				LastUpgradeCheck = 2700;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				ORGANIZATIONNAME = KeyCutAnalyzer;
 				TargetAttributes = {
-					A80000000000000000000001 = {
-						CreatedOnToolsVersion = 27.0;
+					A10000000000000000000002 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
-			buildConfigurationList = AD0000000000000000000001 /* Build configuration list for PBXProject "KeyCutAnalyzer" */;
-			compatibilityVersion = "Xcode 16.0";
+			buildConfigurationList = A1000000000000000000000D /* Build configuration list for PBXProject "KeyCutAnalyzer" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = A60000000000000000000001;
-			minimizedProjectReferenceProxies = 1;
+			mainGroup = A1000000000000000000000A;
 			packageReferences = (
-				AE0000000000000000000001 /* XCLocalSwiftPackageReference "KeyCutCore" */,
+				A10000000000000000000007 /* XCLocalSwiftPackageReference "." */,
 			);
-			preferredProjectObjectVersion = 77;
-			productRefGroup = A70000000000000000000001 /* Products */;
+			productRefGroup = A1000000000000000000000C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A80000000000000000000001 /* KeyCutAnalyzer */,
+				A10000000000000000000002 /* KeyCutAnalyzer */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		AB0000000000000000000001 /* Resources */ = {
+		A10000000000000000000004 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B10000000000000000000007 /* LaunchScreen.storyboard in Resources */,
+				B10000000000000000000008 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		AA0000000000000000000001 /* Sources */ = {
+		A10000000000000000000003 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B10000000000000000000001 /* KeyCutAnalyzerApp.swift in Sources */,
+				B10000000000000000000002 /* ContentView.swift in Sources */,
+				B10000000000000000000003 /* CameraController.swift in Sources */,
+				B10000000000000000000004 /* CameraPreview.swift in Sources */,
+				B10000000000000000000005 /* SilhouetteExtractor.swift in Sources */,
+				B10000000000000000000006 /* ReadoutPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		AF0000000000000000000001 /* Debug */ = {
+		A10000000000000000000011 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -149,23 +172,18 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		B00000000000000000000001 /* Release */ = {
+		A10000000000000000000012 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -173,32 +191,25 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				SDKROOT = iphoneos;
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		B10000000000000000000001 /* Debug */ = {
+		A10000000000000000000013 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "KeyCutAnalyzer uses the camera to measure a key held in side profile.";
+				INFOPLIST_FILE = KeyCutAnalyzer/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -208,7 +219,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.bradfordrobbins.KeyCutAnalyzer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -217,19 +227,17 @@
 			};
 			name = Debug;
 		};
-		B20000000000000000000001 /* Release */ = {
+		A10000000000000000000014 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "KeyCutAnalyzer uses the camera to measure a key held in side profile.";
+				INFOPLIST_FILE = KeyCutAnalyzer/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -239,7 +247,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.bradfordrobbins.KeyCutAnalyzer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -251,20 +258,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A90000000000000000000001 /* Build configuration list for PBXNativeTarget "KeyCutAnalyzer" */ = {
+		A1000000000000000000000D /* Build configuration list for PBXProject "KeyCutAnalyzer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B10000000000000000000001 /* Debug */,
-				B20000000000000000000001 /* Release */,
+				A10000000000000000000011 /* Debug */,
+				A10000000000000000000012 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AD0000000000000000000001 /* Build configuration list for PBXProject "KeyCutAnalyzer" */ = {
+		A1000000000000000000000E /* Build configuration list for PBXNativeTarget "KeyCutAnalyzer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AF0000000000000000000001 /* Debug */,
-				B00000000000000000000001 /* Release */,
+				A10000000000000000000013 /* Debug */,
+				A10000000000000000000014 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -272,19 +279,19 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		AE0000000000000000000001 /* XCLocalSwiftPackageReference "KeyCutCore" */ = {
+		A10000000000000000000007 /* XCLocalSwiftPackageReference "." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = KeyCutCore;
+			relativePath = .;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A20000000000000000000001 /* KeyCutCore */ = {
+		A10000000000000000000008 /* KeyCutCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AE0000000000000000000001 /* XCLocalSwiftPackageReference "KeyCutCore" */;
+			package = A10000000000000000000007 /* XCLocalSwiftPackageReference "." */;
 			productName = KeyCutCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = AC0000000000000000000001 /* Project object */;
+	rootObject = A10000000000000000000001 /* Project object */;
 }

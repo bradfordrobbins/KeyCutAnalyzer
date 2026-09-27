@@ -4,7 +4,7 @@ import SwiftUI
 struct KeyCutAnalyzerApp: App {
     var body: some Scene {
         WindowGroup {
-            AnalyzerView()
+            ContentView()
         }
     }
 }
