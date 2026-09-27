@@ -18,9 +18,11 @@ Schlage Classic SC1 uses the first five cut stations on the chart. The chart’s
 
 1. Open `KeyCutAnalyzer.xcodeproj` in Xcode 27 (the iOS 27 SDK). No XcodeGen step.
 2. Select the **KeyCutAnalyzer** scheme.
-3. Select the run destination **My Mac (Designed for iPad)**.
-4. Run. Allow the camera when asked. The usage string is “The camera measures the key.”
+3. Select the run destination. For a physical iPhone that is in Developer Mode, choose that iPhone. Otherwise choose **My Mac (Designed for iPad)**.
+4. Run. iOS asks to use the camera. The usage string is “The camera measures the key.” Tap Allow. The rear wide camera starts. If you previously denied access, tap **Enable Camera** in the app, turn Camera on for KeyCutAnalyzer, and return to the app.
 5. Hold an SC1 key in side profile against a contrasting background. The readout stays empty, with “Hold the key in profile”, until a key locks.
+
+The iOS Simulator has no camera. A phone in Developer Mode does: unlock it, trust the computer, and leave Developer Mode on under Settings → Privacy & Security.
 
 On iPad-width layouts the readout is a side panel. On a compact width it sits under the camera. The key-type control lists the catalog. Today that catalog is only Schlage SC1.
 

@@ -12,6 +12,10 @@ final class CameraController: NSObject, ObservableObject {
     @Published private(set) var canSwitchCamera = false
     @Published private(set) var isolationHint = "Tap the key to isolate it. Double-tap to clear."
     @Published private(set) var spec: KeySpec = KeyCatalog.sc1
+    /// Increments after the capture session is running so the preview layer can reattach.
+    @Published private(set) var previewEpoch = 0
+    /// True when iOS will not show the camera until the user turns it on for this app.
+    @Published private(set) var needsCameraEnable = false
 
     private let output = AVCaptureVideoDataOutput()
     private let sessionQueue = DispatchQueue(label: "keycut.session")
@@ -31,19 +35,28 @@ final class CameraController: NSObject, ObservableObject {
     func start() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
+            DispatchQueue.main.async { self.needsCameraEnable = false }
             sessionQueue.async { [weak self] in self?.configureSession() }
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
                 guard let self else { return }
                 if granted {
+                    DispatchQueue.main.async { self.needsCameraEnable = false }
                     self.sessionQueue.async { self.configureSession() }
                 } else {
-                    self.publishError("Camera access is off. Enable it so the camera can measure the key.")
+                    self.denyCamera()
                 }
             }
-        default:
-            publishError("Camera access is off. Enable it so the camera can measure the key.")
+        case .denied, .restricted:
+            denyCamera()
+        @unknown default:
+            denyCamera()
         }
+    }
+
+    private func denyCamera() {
+        DispatchQueue.main.async { self.needsCameraEnable = true }
+        publishError("Camera access is off. Enable it so the camera can measure the key.")
     }
 
     func selectSpec(id: String) {
@@ -87,37 +100,76 @@ final class CameraController: NSObject, ObservableObject {
     }
 
     private func configureSession() {
+        if session.isRunning {
+            publishRunning()
+            return
+        }
+        if videoInput != nil {
+            session.startRunning()
+            publishRunning()
+            return
+        }
+
         session.beginConfiguration()
-        session.sessionPreset = .high
+        if session.canSetSessionPreset(.high) {
+            session.sessionPreset = .high
+        } else if session.canSetSessionPreset(.hd1920x1080) {
+            session.sessionPreset = .hd1920x1080
+        }
         devices = Self.availableCameras()
         guard let device = devices.first else {
             session.commitConfiguration()
-            publishError("No camera is available. The iOS Simulator has no camera. Run My Mac (Designed for iPad) or a device.")
+            publishError("No camera is available. On iPhone, confirm Developer Mode is on and that Settings allows KeyCutAnalyzer to use the camera. The iOS Simulator has no camera.")
             return
         }
         do {
+            try configure(device)
             let input = try AVCaptureDeviceInput(device: device)
-            if session.canAddInput(input) {
-                session.addInput(input)
-                videoInput = input
+            guard session.canAddInput(input) else {
+                session.commitConfiguration()
+                publishError("The camera could not be opened.")
+                return
             }
+            session.addInput(input)
+            videoInput = input
             output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
             output.alwaysDiscardsLateVideoFrames = true
             output.setSampleBufferDelegate(self, queue: analysisQueue)
-            if session.canAddOutput(output) {
-                session.addOutput(output)
+            guard session.canAddOutput(output) else {
+                session.commitConfiguration()
+                publishError("The camera could not be opened.")
+                return
             }
+            session.addOutput(output)
             session.commitConfiguration()
-            let multiple = devices.count > 1
-            DispatchQueue.main.async {
-                self.canSwitchCamera = multiple
-                self.cameraError = nil
-            }
             applyRotation()
             session.startRunning()
+            publishRunning()
         } catch {
             session.commitConfiguration()
             publishError("The camera could not start. \(error.localizedDescription)")
+        }
+    }
+
+    private func configure(_ device: AVCaptureDevice) throws {
+        try device.lockForConfiguration()
+        defer { device.unlockForConfiguration() }
+        if device.isFocusModeSupported(.continuousAutoFocus) {
+            device.focusMode = .continuousAutoFocus
+        }
+        if device.isExposureModeSupported(.continuousAutoExposure) {
+            device.exposureMode = .continuousAutoExposure
+        }
+    }
+
+    private func publishRunning() {
+        let multiple = devices.count > 1
+        DispatchQueue.main.async {
+            self.canSwitchCamera = multiple
+            self.cameraError = nil
+            self.needsCameraEnable = false
+            self.previewEpoch += 1
+            self.applyRotation()
         }
     }
 
@@ -157,14 +209,16 @@ final class CameraController: NSObject, ObservableObject {
             connection.videoRotationAngle = captureAngle
         }
         rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self] coordinator, _ in
+            let captureAngle = coordinator.videoRotationAngleForHorizonLevelCapture
+            let previewAngle = coordinator.videoRotationAngleForHorizonLevelPreview
             self?.sessionQueue.async {
-                let angle = coordinator.videoRotationAngleForHorizonLevelCapture
-                if let connection = self?.output.connection(with: .video), connection.isVideoRotationAngleSupported(angle) {
-                    connection.videoRotationAngle = angle
+                if let connection = self?.output.connection(with: .video), connection.isVideoRotationAngleSupported(captureAngle) {
+                    connection.videoRotationAngle = captureAngle
                 }
-                if let preview = self?.previewLayer?.connection,
-                   preview.isVideoRotationAngleSupported(coordinator.videoRotationAngleForHorizonLevelPreview) {
-                    preview.videoRotationAngle = coordinator.videoRotationAngleForHorizonLevelPreview
+            }
+            DispatchQueue.main.async {
+                if let connection = self?.previewLayer?.connection, connection.isVideoRotationAngleSupported(previewAngle) {
+                    connection.videoRotationAngle = previewAngle
                 }
             }
         }
@@ -187,16 +241,29 @@ final class CameraController: NSObject, ObservableObject {
             types.append(.external)
         }
         let discovery = AVCaptureDevice.DiscoverySession(deviceTypes: types, mediaType: .video, position: .unspecified)
-        let unique = discovery.devices.reduce(into: [AVCaptureDevice]()) { list, device in
+        var unique = discovery.devices.reduce(into: [AVCaptureDevice]()) { list, device in
             if !list.contains(where: { $0.uniqueID == device.uniqueID }) {
                 list.append(device)
             }
         }
+        if let rear = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+           !unique.contains(where: { $0.uniqueID == rear.uniqueID }) {
+            unique.insert(rear, at: 0)
+        }
         return unique.sorted { lhs, rhs in
-            if lhs.position == .back && rhs.position != .back { return true }
-            if lhs.position != .back && rhs.position == .back { return false }
+            let lhsRank = cameraRank(lhs)
+            let rhsRank = cameraRank(rhs)
+            if lhsRank != rhsRank { return lhsRank < rhsRank }
             return lhs.localizedName < rhs.localizedName
         }
+    }
+
+    /// Rear wide camera first, so an iPhone opens the lens used to photograph the key.
+    private static func cameraRank(_ device: AVCaptureDevice) -> Int {
+        if device.deviceType == .builtInWideAngleCamera && device.position == .back { return 0 }
+        if device.position == .back { return 1 }
+        if device.deviceType == .builtInWideAngleCamera { return 2 }
+        return 3
     }
 }
 

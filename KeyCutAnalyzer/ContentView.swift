@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import KeyCutCore
 
 struct ContentView: View {
@@ -26,13 +27,22 @@ struct ContentView: View {
         }
         .background(Theme.camera)
         .preferredColorScheme(.dark)
-        .onAppear { camera.start() }
+        .task { camera.start() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                camera.start()
+            }
+        }
     }
+
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
 
     private var cameraStage: some View {
         ZStack {
             CameraPreview(
                 session: camera.session,
+                previewEpoch: camera.previewEpoch,
                 reading: camera.reading,
                 imageSize: camera.imageSize,
                 onPreviewReady: { camera.attachPreview($0) },
@@ -42,13 +52,22 @@ struct ContentView: View {
             .ignoresSafeArea()
 
             if let error = camera.cameraError {
-                Text(error)
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(Theme.ink)
-                    .multilineTextAlignment(.center)
-                    .padding(16)
-                    .background(Theme.panel.opacity(0.92), in: RoundedRectangle(cornerRadius: 12))
-                    .padding(20)
+                VStack(spacing: 12) {
+                    Text(error)
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(Theme.ink)
+                        .multilineTextAlignment(.center)
+                    if camera.needsCameraEnable {
+                        Button("Enable Camera") {
+                            openURL(URL(string: UIApplication.openSettingsURLString)!)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Theme.brass)
+                    }
+                }
+                .padding(16)
+                .background(Theme.panel.opacity(0.92), in: RoundedRectangle(cornerRadius: 12))
+                .padding(20)
             }
 
             VStack {

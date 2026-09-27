@@ -5,6 +5,7 @@ import UIKit
 
 struct CameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
+    let previewEpoch: Int
     let reading: KeyReading?
     let imageSize: CGSize
     let onPreviewReady: (AVCaptureVideoPreviewLayer) -> Void
@@ -26,8 +27,10 @@ struct CameraPreview: UIViewRepresentable {
     func updateUIView(_ uiView: PreviewHost, context: Context) {
         context.coordinator.onTapNormalized = onTapNormalized
         context.coordinator.onDoubleTap = onDoubleTap
-        if uiView.previewLayer.session !== session {
+        if uiView.previewLayer.session !== session || context.coordinator.previewEpoch != previewEpoch {
             uiView.previewLayer.session = session
+            context.coordinator.previewEpoch = previewEpoch
+            onPreviewReady(uiView.previewLayer)
         }
         uiView.reading = reading
         uiView.imageSize = imageSize
@@ -41,6 +44,7 @@ struct CameraPreview: UIViewRepresentable {
     final class Coordinator: NSObject {
         var onTapNormalized: (CGPoint) -> Void
         var onDoubleTap: () -> Void
+        var previewEpoch = -1
 
         init(onTapNormalized: @escaping (CGPoint) -> Void, onDoubleTap: @escaping () -> Void) {
             self.onTapNormalized = onTapNormalized
