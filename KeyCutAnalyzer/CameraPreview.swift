@@ -4,7 +4,6 @@ import SwiftUI
 import UIKit
 
 struct CameraPreview: UIViewRepresentable {
-    let session: AVCaptureSession
     let previewEpoch: Int
     let reading: KeyReading?
     let imageSize: CGSize
@@ -14,12 +13,13 @@ struct CameraPreview: UIViewRepresentable {
 
     func makeUIView(context: Context) -> PreviewHost {
         let view = PreviewHost()
-        view.previewLayer.session = session
-        view.previewLayer.videoGravity = .resizeAspectFill
+        view.previewLayer.videoGravity = .resizeAspect
         view.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1)
         context.coordinator.attachGestures(to: view)
+        context.coordinator.previewEpoch = previewEpoch
+        let layer = view.previewLayer
         DispatchQueue.main.async {
-            onPreviewReady(view.previewLayer)
+            onPreviewReady(layer)
         }
         return view
     }
@@ -27,14 +27,15 @@ struct CameraPreview: UIViewRepresentable {
     func updateUIView(_ uiView: PreviewHost, context: Context) {
         context.coordinator.onTapNormalized = onTapNormalized
         context.coordinator.onDoubleTap = onDoubleTap
-        if uiView.previewLayer.session !== session || context.coordinator.previewEpoch != previewEpoch {
-            uiView.previewLayer.session = session
-            context.coordinator.previewEpoch = previewEpoch
-            onPreviewReady(uiView.previewLayer)
-        }
         uiView.reading = reading
         uiView.imageSize = imageSize
         uiView.setNeedsLayout()
+        guard context.coordinator.previewEpoch != previewEpoch else { return }
+        context.coordinator.previewEpoch = previewEpoch
+        let layer = uiView.previewLayer
+        DispatchQueue.main.async {
+            onPreviewReady(layer)
+        }
     }
 
     func makeCoordinator() -> Coordinator {

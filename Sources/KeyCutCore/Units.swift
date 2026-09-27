@@ -20,4 +20,14 @@ public enum Units {
     public static func formatSignedMillimeters(_ millimeters: Double) -> String {
         String(format: "%+.3f", millimeters)
     }
+
+    /// Exactly three digits after the decimal point.
+    public static func formatInches(_ inches: Double) -> String {
+        String(format: "%.3f", inches)
+    }
+
+    /// Signed, exactly three digits after the decimal point.
+    public static func formatSignedInches(_ inches: Double) -> String {
+        String(format: "%+.3f", inches)
+    }
 }

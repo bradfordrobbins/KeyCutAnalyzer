@@ -26,6 +26,9 @@ public struct CutOverlay: Equatable, Sendable {
     public let bottom: Point2D
     public let root: Point2D
     public let label: Point2D
+    /// Ends of the measured root flat, in image pixels.
+    public let widthStart: Point2D
+    public let widthEnd: Point2D
 }
 
 public struct OverlayGeometry: Equatable, Sendable {
@@ -46,17 +49,23 @@ public struct CutReading: Equatable, Sendable {
     public let specRootDepthMillimeters: Double
     public let deviationMillimeters: Double
     public let outsideDepthTolerance: Bool
+    /// Measured width of the root flat along the blade.
+    public let cutWidthMillimeters: Double
 
     public var shoulderDistanceText: String {
-        Units.formatMillimeters(shoulderDistanceMillimeters)
+        Units.formatInches(shoulderDistanceInches)
     }
 
     public var rootDepthText: String {
-        Units.formatMillimeters(rootDepthMillimeters)
+        Units.formatInches(rootDepthInches)
     }
 
     public var deviationText: String {
-        Units.formatSignedMillimeters(deviationMillimeters)
+        Units.formatSignedInches(Units.inches(fromMillimeters: deviationMillimeters))
+    }
+
+    public var cutWidthText: String {
+        Units.formatInches(Units.inches(fromMillimeters: cutWidthMillimeters))
     }
 }
 
@@ -68,6 +77,85 @@ public struct KeyReading: Equatable, Sendable {
     public let macsWarning: String?
     public let pose: KeyPose
     public let overlay: OverlayGeometry
+
+    /// Rewrites image-space geometry through a crop-to-photo mapping. Cut depths stay the same.
+    public func mapImagePoints(_ transform: (Point2D) -> Point2D) -> KeyReading {
+        let origin = transform(pose.origin)
+        let tipEnd = transform(pose.origin + pose.tipAxis)
+        let bittingEnd = transform(pose.origin + pose.bittingAxis)
+        let tipVector = tipEnd - origin
+        let bittingVector = bittingEnd - origin
+        let scale = tipVector.length()
+        let movedPose = KeyPose(
+            origin: origin,
+            tipAxis: tipVector.normalized(),
+            bittingAxis: bittingVector.normalized(),
+            pixelsPerInch: pose.pixelsPerInch * (scale > 1e-9 ? scale : 1)
+        )
+        return KeyReading(
+            specID: specID,
+            code: code,
+            cuts: cuts,
+            macsViolations: macsViolations,
+            macsWarning: macsWarning,
+            pose: movedPose,
+            overlay: OverlayGeometry(
+                bottomStart: transform(overlay.bottomStart),
+                bottomEnd: transform(overlay.bottomEnd),
+                shoulderStart: transform(overlay.shoulderStart),
+                shoulderEnd: transform(overlay.shoulderEnd),
+                cuts: overlay.cuts.map { cut in
+                    CutOverlay(
+                        index: cut.index,
+                        bottom: transform(cut.bottom),
+                        root: transform(cut.root),
+                        label: transform(cut.label),
+                        widthStart: transform(cut.widthStart),
+                        widthEnd: transform(cut.widthEnd)
+                    )
+                }
+            )
+        )
+    }
+
+    /// Moves image-space geometry from a crop back onto the full photo.
+    public func translated(by offset: Point2D) -> KeyReading {
+        guard offset.x != 0 || offset.y != 0 else { return self }
+        func point(_ value: Point2D) -> Point2D {
+            Point2D(value.x + offset.x, value.y + offset.y)
+        }
+        let movedPose = KeyPose(
+            origin: point(pose.origin),
+            tipAxis: pose.tipAxis,
+            bittingAxis: pose.bittingAxis,
+            pixelsPerInch: pose.pixelsPerInch
+        )
+        let movedOverlay = OverlayGeometry(
+            bottomStart: point(overlay.bottomStart),
+            bottomEnd: point(overlay.bottomEnd),
+            shoulderStart: point(overlay.shoulderStart),
+            shoulderEnd: point(overlay.shoulderEnd),
+            cuts: overlay.cuts.map { cut in
+                CutOverlay(
+                    index: cut.index,
+                    bottom: point(cut.bottom),
+                    root: point(cut.root),
+                    label: point(cut.label),
+                    widthStart: point(cut.widthStart),
+                    widthEnd: point(cut.widthEnd)
+                )
+            }
+        )
+        return KeyReading(
+            specID: specID,
+            code: code,
+            cuts: cuts,
+            macsViolations: macsViolations,
+            macsWarning: macsWarning,
+            pose: movedPose,
+            overlay: movedOverlay
+        )
+    }
 
     /// Scales image-space geometry from a working raster back to the source frame.
     /// Cut depths and the bitting code are unchanged.
@@ -88,7 +176,14 @@ public struct KeyReading: Equatable, Sendable {
             shoulderStart: point(overlay.shoulderStart),
             shoulderEnd: point(overlay.shoulderEnd),
             cuts: overlay.cuts.map { cut in
-                CutOverlay(index: cut.index, bottom: point(cut.bottom), root: point(cut.root), label: point(cut.label))
+                CutOverlay(
+                    index: cut.index,
+                    bottom: point(cut.bottom),
+                    root: point(cut.root),
+                    label: point(cut.label),
+                    widthStart: point(cut.widthStart),
+                    widthEnd: point(cut.widthEnd)
+                )
             }
         )
         return KeyReading(

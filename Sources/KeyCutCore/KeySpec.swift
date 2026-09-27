@@ -15,10 +15,12 @@ public struct KeySpec: Equatable, Identifiable, Sendable {
     public let includedAngleDegrees: Double
     public let rootFlatInches: Double
     public let macs: Int
-    /// Depth may be this much deeper (larger root-depth number) than nominal.
+    /// Measured root may be this much larger than nominal. A larger root depth is a shallower cut.
     public let depthTolerancePlusInches: Double
-    /// Depth may be this much shallower (smaller root-depth number) than nominal.
+    /// Measured root may be this much smaller than nominal. A smaller root depth is a deeper cut.
     public let depthToleranceMinusInches: Double
+    /// Absolute deviation above the tolerance and at or below this value is a caution, not a failure.
+    public let depthCautionInches: Double
     public let spacingToleranceInches: Double
 
     public init(
@@ -34,6 +36,7 @@ public struct KeySpec: Equatable, Identifiable, Sendable {
         macs: Int,
         depthTolerancePlusInches: Double,
         depthToleranceMinusInches: Double,
+        depthCautionInches: Double,
         spacingToleranceInches: Double
     ) {
         self.id = id
@@ -48,6 +51,7 @@ public struct KeySpec: Equatable, Identifiable, Sendable {
         self.macs = macs
         self.depthTolerancePlusInches = depthTolerancePlusInches
         self.depthToleranceMinusInches = depthToleranceMinusInches
+        self.depthCautionInches = depthCautionInches
         self.spacingToleranceInches = spacingToleranceInches
     }
 
@@ -73,6 +77,50 @@ public struct KeySpec: Equatable, Identifiable, Sendable {
     }
 }
 
+/// Face dimensions of one key blank. Lengths are along the blade; widths are across the head and blade.
+public struct KeyBlank: Equatable, Sendable {
+    public let overallMillimeters: Double
+    public let bowWidthMillimeters: Double
+    public let bladeLengthMillimeters: Double
+    public let bladeWidthMillimeters: Double
+
+    public init(
+        overallMillimeters: Double,
+        bowWidthMillimeters: Double,
+        bladeLengthMillimeters: Double,
+        bladeWidthMillimeters: Double
+    ) {
+        self.overallMillimeters = overallMillimeters
+        self.bowWidthMillimeters = bowWidthMillimeters
+        self.bladeLengthMillimeters = bladeLengthMillimeters
+        self.bladeWidthMillimeters = bladeWidthMillimeters
+    }
+
+    public var overallInches: Double { overallMillimeters / 25.4 }
+    public var bowWidthInches: Double { bowWidthMillimeters / 25.4 }
+    public var bladeLengthInches: Double { bladeLengthMillimeters / 25.4 }
+    public var bladeWidthInches: Double { bladeWidthMillimeters / 25.4 }
+    public var bowLengthInches: Double { (overallMillimeters - bladeLengthMillimeters) / 25.4 }
+    /// Bow metal past each edge of the blade. The head is wider than the blade on both sides.
+    public var bowSideInches: Double { (bowWidthInches - bladeWidthInches) / 2 }
+    /// Bitting-side top of the bow, measured from the blade spine.
+    public var bowTopInches: Double { bladeWidthInches + bowSideInches }
+    /// Spine-side bottom of the bow, below the blade spine.
+    public var bowBottomInches: Double { -bowSideInches }
+    /// Tip chamfer begins this far from the shoulder. Taken from the drawing's tip, not a separate callout.
+    public var tipTaperStartInches: Double { bladeLengthInches - (3.8 / 25.4) }
+}
+
+public enum KeyBlanks {
+    /// Standard SC1 blank: 52.9 mm overall, 26.5 mm head, 26.15 mm blade, 8.85 mm blade width.
+    public static let sc1 = KeyBlank(
+        overallMillimeters: 52.9,
+        bowWidthMillimeters: 26.5,
+        bladeLengthMillimeters: 26.15,
+        bladeWidthMillimeters: 8.85
+    )
+}
+
 public enum KeyCatalog {
     public static let sc1 = KeySpec(
         id: "SC1",
@@ -86,7 +134,8 @@ public enum KeyCatalog {
         rootFlatInches: 0.031,
         macs: 7,
         depthTolerancePlusInches: 0.002,
-        depthToleranceMinusInches: 0,
+        depthToleranceMinusInches: 0.002,
+        depthCautionInches: 0.005,
         spacingToleranceInches: 0.001
     )
 
@@ -95,6 +144,15 @@ public enum KeyCatalog {
     public static func spec(id: String) -> KeySpec? {
         all.first { $0.id == id }
     }
+}
+
+public enum DepthBand: Equatable, Sendable {
+    /// Within the depth tolerance.
+    case nominal
+    /// Outside tolerance, at or inside the caution limit.
+    case caution
+    /// Beyond the caution limit.
+    case fail
 }
 
 public struct BiteMatch: Equatable, Sendable {
@@ -133,6 +191,15 @@ public enum BittingMath {
             deviationMillimeters: Units.millimeters(fromInches: deviationInches),
             outsideTolerance: outside
         )
+    }
+
+    /// White within ±tolerance, yellow through the caution limit, red beyond it.
+    public static func depthBand(deviationInches: Double, spec: KeySpec) -> DepthBand {
+        let magnitude = abs(deviationInches)
+        let tolerance = max(spec.depthTolerancePlusInches, spec.depthToleranceMinusInches)
+        if magnitude <= tolerance + 1e-9 { return .nominal }
+        if magnitude <= spec.depthCautionInches + 1e-9 { return .caution }
+        return .fail
     }
 
     public static func macsViolations(bites: [Int], spec: KeySpec) -> [MACSViolation] {

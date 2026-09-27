@@ -23,10 +23,64 @@ public struct SyntheticPose: Equatable, Sendable {
 }
 
 public enum SyntheticKey {
-    public static let bowLengthInches = 1.00
-    public static let bowHeightInches = 1.05
-    public static let tipInches = 1.20
-    public static let tipTaperStartInches = 1.05
+    public static var bowLengthInches: Double { KeyBlanks.sc1.bowLengthInches }
+    public static var bowHeightInches: Double { KeyBlanks.sc1.bowTopInches }
+    public static var tipInches: Double { KeyBlanks.sc1.bladeLengthInches }
+    public static var tipTaperStartInches: Double { KeyBlanks.sc1.tipTaperStartInches }
+    /// Bow back to tip.
+    public static var spanInches: Double { KeyBlanks.sc1.overallInches }
+
+    /// Uncut SC1 blank in key inches. Shoulder at the origin, tip toward +X, bitting toward +Y.
+    /// The bow is wider than the blade on both sides of the spine. Screen placement turns +X to the left.
+    public static func blankOutline() -> [Point2D] {
+        let blank = KeyBlanks.sc1
+        let blade = blank.bladeWidthInches
+        let tip = blank.bladeLengthInches
+        let bow = blank.bowLengthInches
+        let top = blank.bowTopInches
+        let bottom = blank.bowBottomInches
+        let taperStart = blank.tipTaperStartInches
+        let neck = 2.2 / 25.4
+        let step = 4.8 / 25.4
+        let tab = 7.2 / 25.4
+        let mid = blade / 2
+        let tabHalf = blank.bowWidthInches * 0.20
+        return [
+            Point2D(tip, 0),
+            Point2D(taperStart, blade),
+            Point2D(0, blade),
+            Point2D(-neck, blade),
+            Point2D(-neck, top * 0.62),
+            Point2D(-step, top),
+            Point2D(-(bow - tab), top),
+            Point2D(-(bow - tab * 0.45), mid + tabHalf),
+            Point2D(-bow, mid + tabHalf * 0.55),
+            Point2D(-bow, mid - tabHalf * 0.55),
+            Point2D(-(bow - tab * 0.45), mid - tabHalf),
+            Point2D(-(bow - tab), bottom),
+            Point2D(-step, bottom),
+            Point2D(-neck, bottom * 0.35),
+            Point2D(-neck, 0),
+            Point2D(0, 0)
+        ]
+    }
+
+    /// Pose of the blank in a crop of its bounding box. Head on the right, blade to the left, bites up.
+    public static func blankPose(cropWidth: Double, cropHeight: Double) -> KeyPose {
+        let blank = KeyBlanks.sc1
+        let span = blank.overallInches
+        let height = blank.bowWidthInches
+        let pixelsPerInch = cropWidth / span
+        return KeyPose(
+            origin: Point2D(
+                cropWidth * (blank.bladeLengthInches / span),
+                cropHeight * (blank.bowTopInches / height)
+            ),
+            tipAxis: Point2D(-1, 0),
+            bittingAxis: Point2D(0, -1),
+            pixelsPerInch: pixelsPerInch
+        )
+    }
 
     public static func contour(code: [Int], spec: KeySpec) -> [Point2D] {
         let bites = normalized(code: code, spec: spec)
